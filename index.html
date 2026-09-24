@@ -1,0 +1,626 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WE, trade</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+
+    <div class="dashboard-container">
+
+        <div class="app-topbar">
+            <header>
+                <h1>Kumamake, we hope for the best</h1>
+                <p>Deriv banae utatii, Kitaeleweka baba</p>
+            </header>
+            <nav class="quick-nav">
+                <div class="quick-nav-links">
+                    <a href="#section-setup" class="quick-nav-link">Setup</a>
+                    <a href="#section-market" class="quick-nav-link">Market</a>
+                    <a href="#section-session" class="quick-nav-link">Sessions</a>
+                    <a href="#section-strategies" class="quick-nav-link">Strategies</a>
+                    <a href="#section-ledger" class="quick-nav-link">Ledger</a>
+                    <a href="#section-logs" class="quick-nav-link">Logs</a>
+                </div>
+                <div class="quick-nav-ticker">
+                    <span class="ticker-pair">
+                        <span class="ticker-label">Tick</span>
+                        <strong id="live-tick-value">--.--</strong>
+                    </span>
+                    <span class="ticker-pair">
+                        <span class="ticker-label">Digit</span>
+                        <strong id="live-digit-value" class="system-msg">-</strong>
+                    </span>
+                </div>
+            </nav>
+        </div>
+
+        <!-- Credentials Panel -->
+        <section class="card" id="section-setup">
+            <h3><b>MASKINI, WEKA PAT NA APP ID</b></h3>
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="api-token">Personal Access Token (PAT):</label>
+                    <input type="password" id="api-token" placeholder="Paste security token here...">
+                </div>
+                <div class="form-group" style="flex: 0 0 140px;">
+                    <label for="app-id">App ID:</label>
+                    <input type="text" id="app-id" placeholder="e.g. 1024">
+                </div>
+            </div>
+
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 4px;">
+                <button id="btn-fetch-accounts" class="btn-primary">Connect</button>
+                <div style="font-size: 0.85rem; color: var(--text-secondary);">
+                    API Status: <strong id="api-status" style="color: var(--text-primary);">Idle</strong>
+                </div>
+            </div>
+        </section>
+        <!-- tufetch accounts -->
+        <section class="card" id="section-market">
+            <h3><b>ACCOUNTS</b></h3>
+            <div class="account-selection">
+                <label for="account-dropdown">Account:</label>
+                <select id="account-dropdown" disabled>
+                    <option value="">-- Fetch accounts first --</option>
+                </select>
+            </div>
+
+            <div class="balance-container-wrapper">
+                <div class="balance-display">
+                    <span id="active-balance">--.--</span>
+                    <span id="active-currency">USD</span>
+                    <div id="account-type-badge" class="badge">None</div>
+                </div>
+
+                <button id="btn-reset-balance" class="btn-secondary" style="display: none;">Reset Balance</button>
+                <button id="btn-toggle-stream" class="btn-secondary" style="margin-top: 4px;"> Stream Digits
+                    </button>
+
+                <!-- deriv symbooo -->
+                <div id="market-data-panel" style="display: none; margin-top: 12px; flex-direction: column; gap: 10px;">
+                    <div class="form-group">
+                        <label for="market-dropdown">Active Symbols:</label>
+                        <select id="market-dropdown">
+                            <option value="">-- Loading symbols... --</option>
+                        </select>
+                    </div>
+                    <p style="font-size: 0.78rem; color: var(--text-secondary);">
+                        Live tick &amp; last digit are pinned in the top bar &mdash; visible on every tab.
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Daily Session Tracker -->
+        <section class="card" id="section-session">
+            <h3><b>DAILY SESSION TRACKER</b></h3>
+            <p style="font-size: 0.8rem; color: var(--text-secondary);">
+                A fixed daily profit target, split evenly across a few sessions. The moment a session's slice
+                is hit, every strategy locks &mdash; but only until that session's time window ends, not for a
+                full day. The time you first start becomes your daily schedule going forward, so you always
+                know exactly when your next session opens.
+            </p>
+
+            <div class="form-row" id="session-setup-row">
+                <div class="form-group">
+                    <label for="session-daily-target">Daily Take-Profit Target ($):</label>
+                    <input type="number" id="session-daily-target" value="10.00" min="0.50" step="0.50">
+                </div>
+                <div class="form-group">
+                    <label for="session-count">Sessions Per Day:</label>
+                    <input type="number" id="session-count" value="4" min="2" max="8" step="1">
+                </div>
+            </div>
+
+            <div style="display: flex; gap: 10px;">
+                <button id="btn-start-session" class="btn-primary" style="flex: 1;">Start Session Tracker</button>
+                <button id="btn-reset-session" class="btn-secondary" style="flex: 1;">Reset Tracker</button>
+            </div>
+
+            <div id="session-status-banner" class="challenge-banner" style="display: none;"></div>
+
+            <p id="session-schedule-note" style="font-size: 0.78rem; color: var(--text-secondary); margin-top: 4px;"></p>
+
+            <div class="balance-display" id="session-progress-display"
+                style="display: none; flex-direction: column; align-items: stretch; gap: 8px;">
+                <div
+                    style="display: flex; justify-content: space-between; flex-wrap: wrap; gap: 6px; font-size: 0.85rem; font-family: var(--font-body); color: var(--text-secondary); font-weight: 500;">
+                    <span id="session-current-label" style="color: var(--text-primary);">Day 1 &middot; Session 1 of 4</span>
+                    <span>Session P/L: <strong id="session-profit-label" style="color: var(--text-primary);">0.00</strong>
+                        / <strong id="session-target-label" style="color: var(--text-primary);">0.00</strong> USD</span>
+                </div>
+                <div class="challenge-progress-track">
+                    <div id="session-progress-fill" class="challenge-progress-fill"></div>
+                </div>
+            </div>
+
+            <div class="table-container" style="max-height: 480px;">
+                <table class="ledger-table challenge-table">
+                    <thead>
+                        <tr>
+                            <th style="width: 10%;">Session</th>
+                            <th style="width: 28%;">Time Window</th>
+                            <th style="width: 20%;">Target</th>
+                            <th style="width: 20%;">Profit</th>
+                            <th style="width: 22%; text-align: center;">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="session-table-body">
+                        <!-- populated dynamically by app.js -->
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!--Strategy Tabs Navigation -->
+        <div class="tabs-navigation" id="section-strategies">
+            <button class="tab-btn active" data-target="tab-even-odd">Digit Even/Odd</button>
+            <button class="tab-btn" data-target="tab-bulk-ou">Bulk Over/Under</button>
+            <button class="tab-btn" data-target="tab-bulk-oud">Bulk Only Ups/Downs</button>
+            <button class="tab-btn" data-target="tab-bulk-htlt">Bulk High/Low Tick</button>
+            <button class="tab-btn" data-target="tab-bulk-eo">Over 0 / Under 9</button>
+            <button class="tab-btn" data-target="tab-bulk-tn">Differs</button>
+            <button class="tab-btn" data-target="tab-pattern-ou">Pattern Over/Under</button>
+        </div>
+
+        <div class="focus-bar" id="focus-bar" style="display: none;">
+            <span class="system-msg">Focus mode: showing this strategy + the ledger only.</span>
+            <button id="btn-exit-focus" class="btn-secondary">Show Full Dashboard</button>
+        </div>
+
+       <!-- STRATEGY 3:-->
+<section class="card tab-content" id="tab-bulk-eo">
+    <h3>Over 0 / Under 9</h3>
+    <p style="font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 8px;">
+        Pick a side, hit start - it arms and fires continuously on that side, the same way Bulk Over 2 does. The moment each trade settles, it immediately fires the next one with the freshly compounded stake. Stake = previous stake + that trade's profit/loss, floored at your base stake so a loss can't zero it out, and capped at a multiple of base stake for safety. Runs non-stop until your Strategy Take-Profit or Max Runs is hit, or you stop it.
+    </p>
+    <div class="form-row">
+        <div class="form-group">
+            <label>Side:</label>
+            <select id="edge-side-select">
+                <option value="OVER0">Over 0</option>
+                <option value="UNDER9">Under 9</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label>Base Stake:</label>
+            <input type="number" id="trade-stake-edge" value="5.00" min="0.50" step="0.50">
+        </div>
+        <div class="form-group">
+            <label>Duration (Ticks):</label>
+            <input type="number" id="trade-duration-edge" value="1" min="1" max="10">
+        </div>
+    </div>
+    <div class="form-row" style="margin-top: 10px;">
+        <div class="form-group">
+            <label>Strategy Take-Profit ($):</label>
+            <input type="number" id="take-profit-edge" value="10.00" min="0" step="0.50"
+                title="Strategy stops itself once cumulative session profit reaches this amount">
+        </div>
+        <div class="form-group">
+            <label>Max Stake Multiplier:</label>
+            <input type="number" id="max-multiplier-edge" value="5" min="1" step="1"
+                title="If the compounded stake would exceed Base Stake x this number, it resets back to Base Stake">
+        </div>
+    </div>
+    <div class="form-row" style="margin-top: 10px;">
+        <div class="form-group">
+            <label>Max Runs:</label>
+            <input type="number" id="max-runs-edge" value="50" min="1" step="1"
+                title="Strategy stops itself once this many trades have been fired, even if Take-Profit hasn't been hit">
+        </div>
+    </div>
+    <div id="edge-status-box" style="margin-top: 10px; padding: 10px 12px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--bg-surface); font-size: 0.82rem; color: var(--text-secondary);">
+        <strong>Status:</strong> <span id="edge-status-text">Idle</span>
+    </div>
+    <div style="display: flex; gap: 10px; margin-top: 14px;">
+        <button id="btn-toggle-edge-rotation" class="btn-primary" style="background-color: var(--accent-green); flex: 1;">Start
+            Over 0/Under 9</button>
+    </div>
+</section>
+<section class="card tab-content" id="tab-bulk-tn">
+    <h3>Differs Execution</h3>
+    <p style="font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 8px;">
+        Fires a Differs contract on this tick for the digit selected below.
+    </p>
+    <div class="form-row">
+        <div class="form-group">
+            <label>Stake (Per Trade):</label>
+            <input type="number" id="trade-stake-tn" value="5.00" min="0.50" step="0.50">
+        </div>
+        <div class="form-group">
+            <label>Duration (Ticks):</label>
+            <input type="number" id="trade-duration-tn" value="1" min="1" max="10">
+        </div>
+        <div class="form-group">
+            <label>Digit (0-9):</label>
+            <input type="number" id="trade-digit-tn" value="5" min="0" max="9">
+        </div>
+    </div>
+    <div class="form-row" style="margin-top: 10px;">
+        <div class="form-group" style="flex-direction: row; align-items: center; gap: 8px;">
+            <input type="checkbox" id="auto-predict-tn" style="width: auto;">
+            <label for="auto-predict-tn" style="margin: 0;">Auto-Predict Digit (Hot digit, last 20 ticks)</label>
+        </div>
+        <div class="form-group">
+            <label>Currently Predicted:</label>
+            <input type="text" id="predicted-digit-tn-display" value="--" readonly disabled>
+        </div>
+    </div>
+    <div class="form-row" style="margin-top: 10px;">
+        <div class="form-group" style="flex-direction: row; align-items: center; gap: 8px;">
+            <input type="checkbox" id="rotate-digits-tn" style="width: auto;">
+            <label for="rotate-digits-tn" style="margin: 0;">Rotate Digit Each Cycle (0 &rarr; 9 &rarr; 1 &rarr; 8 &rarr; 2 &rarr; 7 &rarr; 3 &rarr; 6 &rarr; 4 &rarr; 5, repeat)</label>
+        </div>
+        <div class="form-group">
+            <label>Next Digit:</label>
+            <input type="text" id="rotate-digit-tn-display" value="0" readonly disabled>
+        </div>
+    </div>
+    <p style="font-size: 0.78rem; color: var(--text-secondary); margin-top: 2px;">
+        When on, every fire (manual or auto) uses the next digit in the rotation instead of the fixed Digit field
+        above &mdash; spreading trades across all 10 digits instead of hammering one. Overrides Auto-Predict when
+        both are checked.
+    </p>
+    <div class="form-row" style="margin-top: 10px;">
+        <div class="form-group">
+            <label>Contracts Per Tick (Max Trades Cap):</label>
+            <input type="number" id="max-trades-tn" value="10" min="1" max="100"
+                title="How many Differ contracts to fire on the same tick each time it buys (e.g. 5 = 5 Differ contracts at once)">
+        </div>
+    </div>
+    <div style="display: flex; gap: 10px; margin-top: 14px;">
+        <button id="btn-buy-tn" class="btn-primary" style="background-color: var(--accent-green); flex: 1;">Buy
+            Differ Manually</button>
+        <button id="btn-toggle-auto-tn" class="btn-secondary" style="flex: 1;">Auto Bulk Mode</button>
+    </div>
+
+    <div class="form-row" style="margin-top: 10px;">
+        <div class="form-group" style="flex-direction: row; align-items: center; gap: 8px;">
+            <input type="checkbox" id="loop-until-target-tn" style="width: auto;">
+            <label for="loop-until-target-tn" style="margin: 0;">Keep trading until session target is hit</label>
+        </div>
+    </div>
+    <p style="font-size: 0.78rem; color: var(--text-secondary); margin-top: 2px;">
+        When on, Auto Bulk Mode won't stop after one batch &mdash; it keeps re-firing on its own until your
+        Session Tracker's daily take-profit target is reached (or you stop it manually). Requires the Session
+        Tracker to be running.
+    </p>
+    <div class="balance-display" id="tn-loop-status" style="display: none; padding: 10px 12px; font-size: 0.85rem; justify-content: space-between; margin-top: 6px;">
+        <span>Cycles Fired: <strong id="tn-loop-cycle-count">0</strong></span>
+        <span>Status: <strong id="tn-loop-status-text" class="system-msg">Running</strong></span>
+    </div>
+</section>
+        <section class="card tab-content active" id="tab-even-odd">
+            <h3>Digit Even/Odd Strategy</h3>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Stake Amount ($):</label>
+                    <input type="number" id="trade-stake-eo" value="10.00" min="0.50" step="0.50">
+                </div>
+                <div class="form-group">
+                    <label>Duration (Ticks):</label>
+                    <input type="number" id="trade-duration-eo" value="1" min="1" max="10">
+                </div>
+                <div class="form-group">
+                    <label>Trigger Condition:</label>
+                    <select id="strategy-mode-eo">
+                        <option value="DIGITEVEN">Even Numbers</option>
+                        <option value="DIGITODD">Odd Numbers</option>
+                    </select>
+                </div>
+            </div>
+            <div style="display: flex; gap: 10px; margin-top: 4px;">
+                <button id="btn-buy-eo" class="btn-primary" style="background-color: var(--accent-green); flex: 1;"
+                    disabled>Execute Manually</button>
+                <button id="btn-toggle-auto-eo" class="btn-secondary" style="flex: 1;" disabled>Start Auto-Mode</button>
+            </div>
+        </section>
+        <!-- STRATEGY 5 -->
+        <section class="card tab-content" id="tab-pattern-ou">
+            <h3>Pattern Over/Under</h3>
+            <p style="font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 8px;">
+                Watches the last two ticks. If a 1 and 2 land back-to-back (in either order), it fires an
+                Over 2 contract. If a 7 and 8 land back-to-back (in either order), it fires an Under 7 contract.
+                One button drives both directions automatically &mdash; no manual side selection needed.
+            </p>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Stake ($):</label>
+                    <input type="number" id="trade-stake-pou" value="5.00" min="0.50" step="0.50">
+                </div>
+                <div class="form-group">
+                    <label>Duration (Ticks):</label>
+                    <input type="number" id="trade-duration-pou" value="1" min="1" max="10">
+                </div>
+                <div class="form-group">
+                    <label>Max Trades Run Cap:</label>
+                    <input type="number" id="max-trades-pou" value="10" min="1" max="100"
+                        title="Total cumulative trades to run before auto-stopping">
+                </div>
+            </div>
+
+            <div class="balance-display" style="padding: 12px; font-size: 0.9rem; justify-content: space-between;">
+                <span>Watching digits: <strong id="pattern-digit-history">-- --</strong></span>
+                <span>Last Match: <strong id="pattern-last-match" class="system-msg">None</strong></span>
+            </div>
+
+            <div style="display: flex; gap: 10px; margin-top: 4px;">
+                <button id="btn-toggle-auto-pou" class="btn-secondary" style="flex: 1;" disabled>Pattern auto
+                    detector</button>
+            </div>
+        </section>
+
+        <!-- STRATEGY 2: Bulk Over/Under -->
+        <section class="card tab-content" id="tab-bulk-ou">
+            <h3>Tupige Over/Under Fastaa</h3>
+            <p style="font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 8px;">
+                Fires an Over/Under pair on the same tick, repeated back-to-back the number of times set below.
+            </p>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Stake (Per Trade):</label>
+                    <input type="number" id="trade-stake-ou" value="5.00" min="0.50" step="0.50">
+                </div>
+                <div class="form-group">
+                    <label>Duration (Ticks):</label>
+                    <input type="number" id="trade-duration-ou" value="1" min="1" max="10">
+                </div>
+                <div class="form-group">
+                    <label>Pairs Per Tick (Max Trades Cap):</label>
+                    <input type="number" id="max-trades-ou" value="10" min="1" max="100"
+                        title="How many Over/Under pairs to fire on the same tick each time it buys (e.g. 10 = 10 Over + 10 Under = 20 contracts at once)">
+                </div>
+            </div>
+            <div class="form-row" style="margin-top: 10px;">
+                <div class="form-group">
+                    <label>Prediction OVER (0-8):</label>
+                    <input type="number" id="pred-over" value="3" min="0" max="8">
+                </div>
+                <div class="form-group">
+                    <label>Prediction UNDER (1-9):</label>
+                    <input type="number" id="pred-under" value="6" min="1" max="9">
+                </div>
+            </div>
+
+            <div class="form-row" style="margin-top: 10px;">
+                <div class="form-group" style="flex-direction: row; align-items: center; gap: 8px;">
+                    <input type="checkbox" id="pattern-trigger-ou" style="width: auto;">
+                    <label for="pattern-trigger-ou" style="margin: 0;">Wait for digit pattern before firing</label>
+                </div>
+            </div>
+            <p id="pattern-trigger-ou-help" style="font-size: 0.78rem; color: var(--text-secondary); margin-top: 2px;">
+                When on, Auto Bulk Mode won't fire on the next tick automatically &mdash; it watches the live digit
+                feed and waits until your OVER digit and UNDER digit land back-to-back (either order, including the
+                same digit twice, e.g. OVER 5 / UNDER 4 fires on 4&rarr;5, 5&rarr;4, 4&rarr;4, or 5&rarr;5), then
+                fires the batch immediately, same as usual.
+            </p>
+            <div class="balance-display" id="ou-pattern-status" style="display: none; padding: 10px 12px; font-size: 0.85rem; justify-content: space-between; margin-top: 6px;">
+                <span>Watching digits: <strong id="ou-pattern-digit-history">-- --</strong></span>
+                <span>Last Match: <strong id="ou-pattern-last-match" class="system-msg">None</strong></span>
+            </div>
+
+            <div class="form-row" style="margin-top: 10px;">
+                <div class="form-group" style="flex-direction: row; align-items: center; gap: 8px;">
+                    <input type="checkbox" id="loop-until-target-ou" style="width: auto;">
+                    <label for="loop-until-target-ou" style="margin: 0;">Keep trading until session target is hit</label>
+                </div>
+            </div>
+            <p style="font-size: 0.78rem; color: var(--text-secondary); margin-top: 2px;">
+                When on, Auto Bulk Mode won't stop after one batch &mdash; it keeps re-firing on its own until your
+                Session Tracker's daily take-profit target is reached (or you stop it manually). Requires the
+                Session Tracker to be running.
+            </p>
+            <div class="balance-display" id="ou-loop-status" style="display: none; padding: 10px 12px; font-size: 0.85rem; justify-content: space-between; margin-top: 6px;">
+                <span>Cycles Fired: <strong id="ou-loop-cycle-count">0</strong></span>
+                <span>Status: <strong id="ou-loop-status-text" class="system-msg">Running</strong></span>
+            </div>
+
+            <div style="display: flex; gap: 10px; margin-top: 14px;">
+                <button id="btn-buy-ou" class="btn-primary" style="background-color: var(--accent-green); flex: 1;"
+                    disabled>Buy Pair Manually</button>
+                <button id="btn-toggle-auto-ou" class="btn-secondary" style="flex: 1;" disabled>Auto Bulk
+                    Mode</button>
+            </div>
+
+            <hr style="border: none; border-top: 1px solid var(--border-color); margin: 16px 0;">
+
+            <h3 style="border: none; padding-bottom: 0;">Bulk Over</h3>
+            <p style="font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 8px;">
+                Watches the live tick feed. In <strong>Single Digit</strong> mode it fires the instant the
+                trigger digit appears. In <strong>Two-Digit Sequence</strong> mode it waits until both digits
+                you set land back-to-back (in either order) before firing.
+            </p>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Stake (Per Contract):</label>
+                    <input type="number" id="trade-stake-over2" value="5.00" min="0.50" step="0.50">
+                </div>
+                <div class="form-group">
+                    <label>Duration (Ticks):</label>
+                    <input type="number" id="trade-duration-over2" value="1" min="1" max="10">
+                </div>
+                <div class="form-group">
+                    <label>Over Barrier (0-8):</label>
+                    <input type="number" id="over-barrier-over2" value="2" min="0" max="8">
+                </div>
+            </div>
+            <div class="form-row" style="margin-top: 10px;">
+                <div class="form-group">
+                    <label>Trigger Mode:</label>
+                    <select id="trigger-mode-over2">
+                        <option value="single">Single Digit</option>
+                        <option value="double">Two-Digit Sequence</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label id="trigger-digit-label-over2">Trigger Digit (0-9):</label>
+                    <input type="number" id="trigger-digit-over2" value="5" min="0" max="9">
+                </div>
+                <div class="form-group" id="trigger-digit-2-wrapper-over2" style="display: none;">
+                    <label>Second Trigger Digit (0-9):</label>
+                    <input type="number" id="trigger-digit-2-over2" value="6" min="0" max="9">
+                </div>
+            </div>
+            <div class="form-row" style="margin-top: 10px;">
+                <div class="form-group">
+                    <label>Contracts per Trigger:</label>
+                    <input type="number" id="contracts-per-trigger-over2" value="3" min="1" max="20">
+                </div>
+                <div class="form-group">
+                    <label>Max Triggers (Session Cap):</label>
+                    <input type="number" id="max-triggers-over2" value="10" min="1" max="100">
+                </div>
+            </div>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 14px;">
+                <button id="btn-buy-bulk-over2" class="btn-secondary" style="flex: 1;" disabled>Arm Bulk Over</button>
+                <div style="font-size: 0.8rem; color: var(--text-secondary); margin-left: 10px; white-space: nowrap;">
+                    Triggers: <strong id="over2-run-progress">0 / 0</strong>
+                </div>
+            </div>
+        </section>
+
+        <!-- STRATEGY 6: Bulk Only Ups/Only Downs -->
+        <section class="card tab-content" id="tab-bulk-oud">
+            <h3>Only Ups / Only Downs</h3>
+            <p style="font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 8px;">
+                Fires an Only Ups (RUNHIGH) + Only Downs (RUNLOW) pair on the same tick, repeated back-to-back the
+                number of times set below. Only Ups wins if every tick rises in a row for the full duration; Only
+                Downs wins if every tick falls in a row. Any flat or opposite-direction tick along the way loses
+                that leg immediately &mdash; there's no barrier to set, just stake and duration.
+            </p>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Stake (Per Trade):</label>
+                    <input type="number" id="trade-stake-oud" value="5.00" min="0.50" step="0.50">
+                </div>
+                <div class="form-group">
+                    <label>Duration (Ticks):</label>
+                    <input type="number" id="trade-duration-oud" value="2" min="2" max="10">
+                </div>
+                <div class="form-group">
+                    <label>Pairs Per Tick (Max Trades Cap):</label>
+                    <input type="number" id="max-trades-oud" value="10" min="1" max="100"
+                        title="How many Only Ups/Only Downs pairs to fire on the same tick each time it buys (e.g. 10 = 10 Only Ups + 10 Only Downs = 20 contracts at once)">
+                </div>
+            </div>
+            <div style="display: flex; gap: 10px; margin-top: 14px;">
+                <button id="btn-buy-oud" class="btn-primary" style="background-color: var(--accent-green); flex: 1;"
+                    disabled>Buy Pair Manually</button>
+                <button id="btn-toggle-auto-oud" class="btn-secondary" style="flex: 1;" disabled>Auto Bulk
+                    Mode</button>
+            </div>
+
+            <div class="form-row" style="margin-top: 10px;">
+                <div class="form-group" style="flex-direction: row; align-items: center; gap: 8px;">
+                    <input type="checkbox" id="loop-until-target-oud" style="width: auto;">
+                    <label for="loop-until-target-oud" style="margin: 0;">Keep trading until session target is hit</label>
+                </div>
+            </div>
+            <p style="font-size: 0.78rem; color: var(--text-secondary); margin-top: 2px;">
+                When on, Auto Bulk Mode won't stop after one batch &mdash; it keeps re-firing on its own until your
+                Session Tracker's daily take-profit target is reached (or you stop it manually). Requires the
+                Session Tracker to be running.
+            </p>
+            <div class="balance-display" id="oud-loop-status" style="display: none; padding: 10px 12px; font-size: 0.85rem; justify-content: space-between; margin-top: 6px;">
+                <span>Cycles Fired: <strong id="oud-loop-cycle-count">0</strong></span>
+                <span>Status: <strong id="oud-loop-status-text" class="system-msg">Running</strong></span>
+            </div>
+        </section>
+
+        <!-- STRATEGY 7: Bulk High Tick / Low Tick -->
+        <section class="card tab-content" id="tab-bulk-htlt">
+            <h3>High Tick / Low Tick</h3>
+            <p style="font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 8px;">
+                Fires a High Tick (TICKHIGH) + Low Tick (TICKLOW) pair on the same tick, repeated back-to-back the
+                number of times set below. Each contract runs over the next 5 ticks. High Tick wins if the tick you
+                pick (1&ndash;5) is the highest of the five; Low Tick wins if the tick you pick is the lowest of the
+                five.
+            </p>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Stake (Per Trade):</label>
+                    <input type="number" id="trade-stake-htlt" value="5.00" min="0.50" step="0.50">
+                </div>
+                <div class="form-group">
+                    <label>High Tick &mdash; Selected Tick (1-5):</label>
+                    <input type="number" id="high-tick-htlt" value="1" min="1" max="5">
+                </div>
+                <div class="form-group">
+                    <label>Low Tick &mdash; Selected Tick (1-5):</label>
+                    <input type="number" id="low-tick-htlt" value="1" min="1" max="5">
+                </div>
+                <div class="form-group">
+                    <label>Pairs Per Tick (Max Trades Cap):</label>
+                    <input type="number" id="max-trades-htlt" value="10" min="1" max="100"
+                        title="How many High Tick/Low Tick pairs to fire on the same tick each time it buys (e.g. 10 = 10 High Tick + 10 Low Tick = 20 contracts at once)">
+                </div>
+            </div>
+            <div style="display: flex; gap: 10px; margin-top: 14px;">
+                <button id="btn-buy-htlt" class="btn-primary" style="background-color: var(--accent-green); flex: 1;"
+                    disabled>Buy Pair Manually</button>
+                <button id="btn-toggle-auto-htlt" class="btn-secondary" style="flex: 1;" disabled>Auto Bulk
+                    Mode</button>
+            </div>
+
+            <div class="form-row" style="margin-top: 10px;">
+                <div class="form-group" style="flex-direction: row; align-items: center; gap: 8px;">
+                    <input type="checkbox" id="loop-until-target-htlt" style="width: auto;">
+                    <label for="loop-until-target-htlt" style="margin: 0;">Keep trading until session target is hit</label>
+                </div>
+            </div>
+            <p style="font-size: 0.78rem; color: var(--text-secondary); margin-top: 2px;">
+                When on, Auto Bulk Mode won't stop after one batch &mdash; it keeps re-firing on its own until your
+                Session Tracker's daily take-profit target is reached (or you stop it manually). Requires the
+                Session Tracker to be running.
+            </p>
+            <div class="balance-display" id="htlt-loop-status" style="display: none; padding: 10px 12px; font-size: 0.85rem; justify-content: space-between; margin-top: 6px;">
+                <span>Cycles Fired: <strong id="htlt-loop-cycle-count">0</strong></span>
+                <span>Status: <strong id="htlt-loop-status-text" class="system-msg">Running</strong></span>
+            </div>
+        </section>
+
+        <section class="card" id="section-ledger">
+            <h3>Live Bulk Ledger</h3>
+            <button id="btn-clear-ledger" class="btn-secondary" style="font-size: 0.8rem; padding: 4px 8px;">Clear Ledger</button>
+            <div class="table-container">
+                <table class="ledger-table">
+                    <thead>
+                        <tr>
+                            <th style="width: 30%;">Type</th>
+                            <th style="width: 35%;">Entry/Exit spot</th>
+                            <th style="width: 35%; text-align: right;">Buy price and P/L</th>
+                        </tr>
+                    </thead>
+                    <tbody id="ledger-body">
+    <tr id="ledger-empty-row">
+        <td colspan="3" style="text-align: center; color: #888; padding: 20px;">
+            No bulk operations logged in this session yet.
+        </td>
+    </tr>
+</tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- ogs -->
+        <section class="card" id="section-logs">
+            <h3>Log Data</h3>
+            <div id="log-console" class="console-log">
+                <p class="system-msg">[System]: Ready.</p>
+            </div>
+        </section>
+
+    </div>
+
+    <script src="app.js"></script>
+    <div id="pnl-toast-container" aria-live="polite"></div>
+</body>
+
+</html>
