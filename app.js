@@ -209,8 +209,8 @@ function getHotDigit() {
 }
 
 const DIGIT_PATTERNS = [
-    { digits: [1, 2], contract_type: 'DIGITOVER', barrier: '2', label: 'Over 2 (1\u2194 2 pattern)' },
-    { digits: [7, 8], contract_type: 'DIGITUNDER', barrier: '7', label: 'Under 7 (7\u2194 8 pattern)' }
+    { digits: [2, 1], contract_type: 'DIGITOVER', barrier: '2', label: 'Over 2 (1\u2194 2 pattern)' },
+    { digits: [9, 7], contract_type: 'DIGITUNDER', barrier: '7', label: 'Under 7 (7\u2194 8 pattern)' }
 ];
 
 function matchDigitPattern(history) {
@@ -1193,15 +1193,15 @@ const po18DigitHistoryDisplay = document.getElementById('po18-digit-history');
 const po18LastMatchDisplay = document.getElementById('po18-last-match');
 
 const DIGIT_PATTERNS_O1U8 = [
-    { digits: [0, 1], contract_type: 'DIGITOVER', barrier: '1', label: 'Over 1 (0\u2194 1 pattern)' },
-    { digits: [8, 9], contract_type: 'DIGITUNDER', barrier: '8', label: 'Under 8 (8\u2194 9 pattern)' }
+    { digits: [1, 0], contract_type: 'DIGITOVER', barrier: '1', label: 'Over 1 (0\u2194 1 pattern)' },
+    { digits: [9, 8], contract_type: 'DIGITUNDER', barrier: '8', label: 'Under 8 (8\u2194 9 pattern)' }
 ];
 
 function matchDigitPatternO1U8(history) {
     if (history.length < 2) return null;
     const [a, b] = history;
     return DIGIT_PATTERNS_O1U8.find(p =>
-        (a === p.digits[0] && b === p.digits[1]) || (a === p.digits[1] && b === p.digits[0])
+        (a === p.digits[0] && b === p.digits[1]) || (a === p.digits[0] && b === p.digits[1])
     ) || null;
 }
 
