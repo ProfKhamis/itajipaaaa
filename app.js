@@ -6451,7 +6451,7 @@ function gdKeyProblem(k) {
 
 async function gdPost(url, headers, body) {
     const ctl = new AbortController();
-    const timer = setTimeout(() => ctl.abort(), 45000);
+    const timer = setTimeout(() => ctl.abort(), 60000);
     try { return await fetch(url, { method: 'POST', signal: ctl.signal, headers, body }); }
     finally { clearTimeout(timer); }
 }
@@ -6469,7 +6469,7 @@ async function gdDiagnose(err) {
     if (!reachable) return 'This browser cannot reach Google\'s Gemini service (generativelanguage.googleapis.com) at all. Check mobile data / Wi-Fi, switch network, and turn off any VPN, Private DNS, data-saver or ad-blocker. Tip: open https://generativelanguage.googleapis.com in a new tab - if that does not load, your network is blocking it.';
     return `Google's Gemini service is reachable, but the browser blocked the request itself (browser says: "${why}"). Open the app in a normal Chrome tab (not an in-app browser) and turn off extensions / ad-blockers for this page. If it still fails, send this message to your developer.`;
 }
-
+// Recent made changes
 async function gdCallGemini(prompt) {
     const problem = gdKeyProblem(GD_CFG.key);
     if (problem) throw new Error(problem);
@@ -6479,7 +6479,11 @@ async function gdCallGemini(prompt) {
     const body = JSON.stringify({
         systemInstruction: { parts: [{ text: GD_SYSTEM }] },
         contents: [{ role: 'user', parts: [{ text: prompt }] }],
-        generationConfig: { responseMimeType: 'application/json' }
+        generationConfig: {
+            responseMimeType: 'application/json',
+            thinkingConfig: { thinkingLevel: 'low' },
+            maxOutputTokens: 2048
+        }
     });
     // Three ways of sending the same request. The first that the browser lets through is remembered for next time.
     const modes = {
