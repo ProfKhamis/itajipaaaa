@@ -6195,7 +6195,7 @@ const GD_CFG = (() => {
 })();
 function gdSaveCfg() { try { localStorage.setItem(GD_STORE, JSON.stringify(GD_CFG)); } catch (e) { /* ignore */ } }
 
-const GD_MAX = 1000;
+const GD_MAX = 500;
 let gdDigits = [];
 let gdPrices = [];
 let gdCalls = 0;
@@ -6451,7 +6451,7 @@ function gdKeyProblem(k) {
 
 async function gdPost(url, headers, body) {
     const ctl = new AbortController();
-    const timer = setTimeout(() => ctl.abort(), 45000);
+    const timer = setTimeout(() => ctl.abort(), 60000);
     try { return await fetch(url, { method: 'POST', signal: ctl.signal, headers, body }); }
     finally { clearTimeout(timer); }
 }
@@ -6479,7 +6479,11 @@ async function gdCallGemini(prompt) {
     const body = JSON.stringify({
         systemInstruction: { parts: [{ text: GD_SYSTEM }] },
         contents: [{ role: 'user', parts: [{ text: prompt }] }],
-        generationConfig: { responseMimeType: 'application/json' }
+        generationConfig: {
+    responseMimeType: 'application/json',
+    thinkingConfig: { thinkingLevel: 'low' },
+    maxOutputTokens: 2048
+}
     });
     // Three ways of sending the same request. The first that the browser lets through is remembered for next time.
     const modes = {
