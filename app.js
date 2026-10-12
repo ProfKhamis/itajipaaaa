@@ -803,7 +803,7 @@ marketDropdown.addEventListener('change', (e) => {
 function subscribeToSymbolTicks(symbolCode) {
     if (!optionsWebSocket) return;
     optionsWebSocket.send(JSON.stringify({ "forget_all": "ticks" }));
-    optionsWebSocket.send(JSON.stringify({ "ticks": symbolCode }));
+    optionsWebSocket.send(JSON.stringify({ "ticks": symbolCode, "subscribe": 1 }));
     recentDigitHistory = [];
     digitFrequencyWindow = [];
     digitWarmupTicks = 0;
